@@ -1,5 +1,6 @@
 package com.cdq.recruitmenttask.controller;
 
+import com.cdq.recruitmenttask.async.TaskProcessor;
 import com.cdq.recruitmenttask.dto.PersonRequest;
 import com.cdq.recruitmenttask.dto.TaskCreatedResponse;
 import com.cdq.recruitmenttask.dto.TaskResponse;
@@ -26,6 +27,7 @@ public class PersonController {
 
     private final PersonService personService;
     private final TaskService taskService;
+    private final TaskProcessor taskProcessor;
 
     @Operation(
             summary = "Create or update a person",
@@ -53,6 +55,8 @@ public class PersonController {
         Person saved = personService.upsert(person);
 
         Task task = taskService.createTask(saved.getId());
+
+        taskProcessor.process(task);
 
         return ResponseEntity.ok(new TaskCreatedResponse(task.getId()));
     }
