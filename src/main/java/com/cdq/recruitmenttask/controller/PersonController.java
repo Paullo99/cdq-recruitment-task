@@ -1,21 +1,20 @@
 package com.cdq.recruitmenttask.controller;
 
-import com.cdq.recruitmenttask.async.TaskProcessor;
 import com.cdq.recruitmenttask.dto.PersonRequest;
 import com.cdq.recruitmenttask.dto.TaskCreatedResponse;
-import com.cdq.recruitmenttask.dto.TaskResponse;
-import com.cdq.recruitmenttask.model.Person;
-import com.cdq.recruitmenttask.model.Task;
 import com.cdq.recruitmenttask.service.PersonService;
-import com.cdq.recruitmenttask.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,38 +25,48 @@ import org.springframework.web.bind.annotation.RestController;
 public class PersonController {
 
     private final PersonService personService;
-    private final TaskService taskService;
-    private final TaskProcessor taskProcessor;
 
     @Operation(
             summary = "Create or update a person",
             description = "Creates or updates a person entity. Triggers asynchronous processing of field differences. Returns a task ID.",
             responses = {
                     @ApiResponse(
-                            responseCode = "200",
+                            responseCode = "201",
                             description = "Successfully created/updated person and created task",
                             content = @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = TaskResponse.class)
+                                    schema = @Schema(implementation = TaskCreatedResponse.class)
                             )
                     )
             }
     )
     @PostMapping
-    public ResponseEntity<TaskCreatedResponse> upsertPerson(@RequestBody PersonRequest personRequest) {
-        Person person = Person.builder()
-                .name(personRequest.name())
-                .surname(personRequest.surname())
-                .birthDate(personRequest.birthDate())
-                .company(personRequest.company())
-                .build();
+    public ResponseEntity<TaskCreatedResponse> createPerson(@RequestBody @Valid PersonRequest personRequest) {
+        TaskCreatedResponse response = personService.createAndProcess(personRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
-        Person saved = personService.upsert(person);
-
-        Task task = taskService.createTask(saved.getId());
-
-        taskProcessor.process(task);
-
-        return ResponseEntity.ok(new TaskCreatedResponse(task.getId()));
+    @Operation(
+            summary = "Update an existing person",
+            description = "Updates an existing person entity by ID. Triggers asynchronous processing of field differences compared to the previous version. Returns a task ID.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully updated person and created task",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = TaskCreatedResponse.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Person with the given ID not found"
+                    )
+            }
+    )
+    @PutMapping("/{id}")
+    public ResponseEntity<TaskCreatedResponse> updatePerson(@PathVariable Long id, @RequestBody @Valid PersonRequest personRequest) {
+        TaskCreatedResponse response = personService.updateAndProcess(id, personRequest);
+        return ResponseEntity.ok(response);
     }
 }

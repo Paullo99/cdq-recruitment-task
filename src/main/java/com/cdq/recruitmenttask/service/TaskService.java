@@ -1,5 +1,6 @@
 package com.cdq.recruitmenttask.service;
 
+import com.cdq.recruitmenttask.dto.TaskDetailsResponse;
 import com.cdq.recruitmenttask.model.Task;
 
 import java.util.List;
@@ -9,7 +10,7 @@ public interface TaskService {
 
     Task createTask(Long personId);
 
-    Optional<Task> findById(String id);
+    Optional<TaskDetailsResponse> findDetailedTask(String taskId);
 
     List<Task> findAll();
 

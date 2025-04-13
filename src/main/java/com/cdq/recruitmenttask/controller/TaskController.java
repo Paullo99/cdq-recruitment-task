@@ -1,7 +1,8 @@
 package com.cdq.recruitmenttask.controller;
 
+import com.cdq.recruitmenttask.dto.TaskDetailsResponse;
 import com.cdq.recruitmenttask.dto.TaskResponse;
-import com.cdq.recruitmenttask.model.Task;
+import com.cdq.recruitmenttask.dto.TaskSummaryResponse;
 import com.cdq.recruitmenttask.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/tasks")
@@ -33,17 +33,22 @@ public class TaskController {
                             description = "List of tasks retrieved successfully",
                             content = @Content(
                                     mediaType = "application/json",
-                                    schema = @Schema(implementation = TaskResponse.class, type = "array")
+                                    schema = @Schema(implementation = TaskSummaryResponse.class, type = "array")
                             )
                     )
             }
     )
     @GetMapping
-    public ResponseEntity<List<TaskResponse>> getAllTasks() {
-        List<TaskResponse> responses = taskService.findAll().stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<List<TaskSummaryResponse>> getAllTasks() {
+        List<TaskSummaryResponse> responseList = taskService.findAll().stream()
+                .map(task -> new TaskSummaryResponse(
+                        task.getId(),
+                        task.getStatus(),
+                        task.getProgress()
+                ))
+                .toList();
+
+        return ResponseEntity.ok(responseList);
     }
 
     @Operation(
@@ -65,18 +70,9 @@ public class TaskController {
             }
     )
     @GetMapping("/{id}")
-    public ResponseEntity<TaskResponse> getTaskById(@PathVariable String id) {
-        return taskService.findById(id)
-                .map(task -> ResponseEntity.ok(mapToDto(task)))
+    public ResponseEntity<TaskDetailsResponse> getTaskById(@PathVariable String id) {
+        return taskService.findDetailedTask(id)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    private TaskResponse mapToDto(Task task) {
-        return new TaskResponse(
-                task.getId(),
-                task.getStatus(),
-                task.getProgress(),
-                task.getResult()
-        );
     }
 }
