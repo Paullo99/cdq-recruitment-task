@@ -9,18 +9,16 @@ public class FieldComparator {
     private static final double THRESHOLD_LOW = 0.4;
     private static final double THRESHOLD_HIGH = 0.9;
 
-    public static FieldChangeResult compare(String field, String oldVal, String newVal) throws InterruptedException {
-        Thread.sleep(10000);
-
-        if (oldVal == null && newVal != null) {
+    public static FieldChangeResult compare(String field, String oldVal, String newVal) {
+        if (isEmpty(oldVal) && !isEmpty(newVal)) {
             return new FieldChangeResult(field, null, newVal, FieldChangeClassification.ADDED);
         }
 
-        if (oldVal != null && (newVal == null || newVal.isEmpty())) {
+        if (!isEmpty(oldVal) && isEmpty(newVal)) {
             return new FieldChangeResult(field, oldVal, null, FieldChangeClassification.DELETED);
         }
 
-        if (oldVal != null && oldVal.equals(newVal)) {
+        if ((oldVal == null && newVal == null) || (oldVal != null && oldVal.equals(newVal))) {
             return new FieldChangeResult(field, oldVal, newVal, FieldChangeClassification.HIGH);
         }
 
@@ -35,12 +33,11 @@ public class FieldComparator {
             classification = FieldChangeClassification.HIGH;
         }
 
-
         return new FieldChangeResult(field, oldVal, newVal, classification);
     }
 
-    public static double calculateSimilarity(String oldVal, String newVal) {
-        if (oldVal == null || newVal == null || oldVal.isEmpty() || newVal.isEmpty()) {
+    private static double calculateSimilarity(String oldVal, String newVal) {
+        if (oldVal == null || newVal == null) {
             return 0.0;
         }
 
@@ -50,5 +47,9 @@ public class FieldComparator {
 
         double dissimilarity = (double) distance / maxLength;
         return 1.0 - dissimilarity;
+    }
+
+    private static boolean isEmpty(String val) {
+        return val == null || val.isBlank();
     }
 }

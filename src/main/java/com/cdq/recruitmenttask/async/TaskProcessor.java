@@ -70,6 +70,8 @@ public class TaskProcessor {
                 FieldChangeResult result = FieldComparator.compare(field, oldVal, newVal);
                 results.add(result);
 
+                Thread.sleep(2000);
+
                 int progress = ((i + 1) * 100) / fields.size();
                 task.setProgress(progress);
                 taskService.update(task);
