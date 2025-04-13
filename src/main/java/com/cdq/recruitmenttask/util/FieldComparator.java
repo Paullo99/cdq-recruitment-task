@@ -16,7 +16,7 @@ public class FieldComparator {
             return new FieldChangeResult(field, null, newVal, FieldChangeClassification.ADDED);
         }
 
-        if (oldVal != null && newVal == null) {
+        if (oldVal != null && (newVal == null || newVal.isEmpty())) {
             return new FieldChangeResult(field, oldVal, null, FieldChangeClassification.DELETED);
         }
 
