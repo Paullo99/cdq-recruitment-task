@@ -1,11 +1,11 @@
 package com.cdq.recruitmenttask.controller;
 
 import com.cdq.recruitmenttask.dto.TaskDetailsResponse;
-import com.cdq.recruitmenttask.dto.TaskResponse;
 import com.cdq.recruitmenttask.dto.TaskSummaryResponse;
 import com.cdq.recruitmenttask.error.ApiError;
 import com.cdq.recruitmenttask.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,7 +35,7 @@ public class TaskController {
                             description = "List of tasks retrieved successfully",
                             content = @Content(
                                     mediaType = "application/json",
-                                    schema = @Schema(implementation = TaskSummaryResponse.class, type = "array")
+                                    array = @ArraySchema(schema = @Schema(implementation = TaskSummaryResponse.class))
                             )
                     )
             }
@@ -54,7 +54,7 @@ public class TaskController {
                             description = "Task found",
                             content = @Content(
                                     mediaType = "application/json",
-                                    schema = @Schema(implementation = TaskResponse.class)
+                                    schema = @Schema(implementation = TaskDetailsResponse.class)
                             )
                     ),
                     @ApiResponse(

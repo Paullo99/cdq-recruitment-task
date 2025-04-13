@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,5 +79,19 @@ class PersonServiceImplTest {
         assertThatThrownBy(() -> personService.updateAndProcess(PERSON_ID, personRequest))
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining("Person with ID 1 not found.");
+    }
+
+    @Test
+    void testFindAll_shouldReturnAllPersons() {
+        Person person1 = Person.builder().id(1L).name("Anna").surname("Nowak").birthDate(LocalDate.of(1999, 1, 1)).company("CDQ").build();
+        Person person2 = Person.builder().id(2L).name("John").surname("Smith").birthDate(LocalDate.of(1990, 1, 1)).company("OldCo").build();
+
+        when(personRepository.findAll()).thenReturn(List.of(person1, person2));
+
+        var response = personService.findAll();
+
+        assertThat(response).hasSize(2);
+        assertThat(response.get(0).name()).isEqualTo("Anna");
+        assertThat(response.get(1).name()).isEqualTo("John");
     }
 }
