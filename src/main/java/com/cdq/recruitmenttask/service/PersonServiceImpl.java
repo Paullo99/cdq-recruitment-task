@@ -3,13 +3,13 @@ package com.cdq.recruitmenttask.service;
 import com.cdq.recruitmenttask.async.TaskProcessor;
 import com.cdq.recruitmenttask.dto.PersonRequest;
 import com.cdq.recruitmenttask.dto.TaskCreatedResponse;
+import com.cdq.recruitmenttask.error.ApiException;
+import com.cdq.recruitmenttask.error.ErrorCode;
 import com.cdq.recruitmenttask.model.Person;
 import com.cdq.recruitmenttask.model.Task;
 import com.cdq.recruitmenttask.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -36,7 +36,10 @@ public class PersonServiceImpl implements PersonService {
     public TaskCreatedResponse updateAndProcess(Long id, PersonRequest request) {
         PersonRequest oldData = findById(id)
                 .map(p -> new PersonRequest(p.getName(), p.getSurname(), p.getBirthDate(), p.getCompany()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ApiException(
+                        ErrorCode.PERSON_NOT_FOUND,
+                        "Person with ID " + id + " not found."
+                ));
 
         Person updated = mapToEntity(request);
         updated.setId(id);

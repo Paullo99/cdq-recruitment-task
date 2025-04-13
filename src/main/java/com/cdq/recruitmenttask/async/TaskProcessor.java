@@ -2,6 +2,8 @@ package com.cdq.recruitmenttask.async;
 
 import com.cdq.recruitmenttask.dto.FieldChangeResult;
 import com.cdq.recruitmenttask.dto.PersonRequest;
+import com.cdq.recruitmenttask.error.ApiException;
+import com.cdq.recruitmenttask.error.ErrorCode;
 import com.cdq.recruitmenttask.model.Task;
 import com.cdq.recruitmenttask.model.TaskStatus;
 import com.cdq.recruitmenttask.service.TaskService;
@@ -24,9 +26,7 @@ public class TaskProcessor {
 
     private final TaskService taskService;
     private final ObjectMapper objectMapper;
-
     private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
-
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @PostConstruct
@@ -44,7 +44,10 @@ public class TaskProcessor {
                 Runnable job = taskQueue.take();
                 job.run();
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new ApiException(
+                        ErrorCode.TASK_EXECUTION_ERROR,
+                        "Error processing task: " + e.getMessage()
+                );
             }
         }
     }
@@ -80,7 +83,10 @@ public class TaskProcessor {
             taskService.update(task);
 
         } catch (Exception e) {
-            System.out.println("Error processing task: " + e.getMessage());
+            throw new ApiException(
+                    ErrorCode.TASK_EXECUTION_ERROR,
+                    "Error executing task: " + e.getMessage()
+            );
         }
     }
 

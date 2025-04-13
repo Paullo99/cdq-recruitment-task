@@ -2,6 +2,7 @@ package com.cdq.recruitmenttask.controller;
 
 import com.cdq.recruitmenttask.dto.PersonRequest;
 import com.cdq.recruitmenttask.dto.TaskCreatedResponse;
+import com.cdq.recruitmenttask.error.ApiError;
 import com.cdq.recruitmenttask.service.PersonService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -60,7 +61,11 @@ public class PersonController {
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "Person with the given ID not found"
+                            description = "Person with the given ID not found",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ApiError.class)
+                            )
                     )
             }
     )

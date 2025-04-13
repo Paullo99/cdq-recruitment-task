@@ -2,6 +2,8 @@ package com.cdq.recruitmenttask.service;
 
 import com.cdq.recruitmenttask.dto.FieldChangeResult;
 import com.cdq.recruitmenttask.dto.TaskDetailsResponse;
+import com.cdq.recruitmenttask.error.ApiException;
+import com.cdq.recruitmenttask.error.ErrorCode;
 import com.cdq.recruitmenttask.model.Task;
 import com.cdq.recruitmenttask.model.TaskStatus;
 import com.cdq.recruitmenttask.repository.TaskRepository;
@@ -10,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,10 +54,17 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private List<FieldChangeResult> deserializeResult(String json) {
+        if(json == null || json.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         try {
             return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (Exception e) {
-            return List.of();
+            throw new ApiException(
+                    ErrorCode.INTERNAL_SERVER_ERROR,
+                    "Failed to deserialize task result: " + e.getMessage()
+            );
         }
     }
 }
