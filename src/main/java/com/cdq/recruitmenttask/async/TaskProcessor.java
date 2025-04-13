@@ -11,6 +11,7 @@ import com.cdq.recruitmenttask.util.FieldComparator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -23,9 +24,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Component
 @RequiredArgsConstructor
 public class TaskProcessor {
+    private static final List<String> FIELDS = List.of("name", "surname", "birthDate", "company");
 
     private final TaskService taskService;
     private final ObjectMapper objectMapper;
+
+    @Value("${task.delay.enabled:false}")
+    private boolean delayEnabled;
+
     private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -58,11 +64,10 @@ public class TaskProcessor {
             task.setProgress(0);
             taskService.update(task);
 
-            List<String> fields = List.of("name", "surname", "birthDate", "company");
             List<FieldChangeResult> results = new ArrayList<>();
 
-            for (int i = 0; i < fields.size(); i++) {
-                String field = fields.get(i);
+            for (int i = 0; i < FIELDS.size(); i++) {
+                String field = FIELDS.get(i);
 
                 String oldVal = extractField(oldPerson, field);
                 String newVal = extractField(newPerson, field);
@@ -70,9 +75,11 @@ public class TaskProcessor {
                 FieldChangeResult result = FieldComparator.compare(field, oldVal, newVal);
                 results.add(result);
 
-                Thread.sleep(2000);
+                if (delayEnabled) {
+                    Thread.sleep(2000);
+                }
 
-                int progress = ((i + 1) * 100) / fields.size();
+                int progress = ((i + 1) * 100) / FIELDS.size();
                 task.setProgress(progress);
                 taskService.update(task);
             }
