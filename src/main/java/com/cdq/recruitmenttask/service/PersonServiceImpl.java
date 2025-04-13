@@ -11,8 +11,6 @@ import com.cdq.recruitmenttask.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class PersonServiceImpl implements PersonService {
@@ -34,7 +32,7 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public TaskCreatedResponse updateAndProcess(Long id, PersonRequest request) {
-        PersonRequest oldData = findById(id)
+        PersonRequest oldData = personRepository.findById(id)
                 .map(p -> new PersonRequest(p.getName(), p.getSurname(), p.getBirthDate(), p.getCompany()))
                 .orElseThrow(() -> new ApiException(
                         ErrorCode.PERSON_NOT_FOUND,
@@ -49,11 +47,6 @@ public class PersonServiceImpl implements PersonService {
         taskProcessor.submit(task, oldData, request);
 
         return new TaskCreatedResponse(task.getId());
-    }
-
-    @Override
-    public Optional<Person> findById(Long id) {
-        return personRepository.findById(id);
     }
 
     private Person mapToEntity(PersonRequest req) {
