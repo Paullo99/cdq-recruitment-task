@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum ErrorCode {
     PERSON_NOT_FOUND(HttpStatus.NOT_FOUND),
+    TASK_NOT_FOUND(HttpStatus.NOT_FOUND),
     TASK_EXECUTION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR);
 

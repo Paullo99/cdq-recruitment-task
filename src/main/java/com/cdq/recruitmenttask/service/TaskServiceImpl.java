@@ -2,6 +2,7 @@ package com.cdq.recruitmenttask.service;
 
 import com.cdq.recruitmenttask.dto.FieldChangeResult;
 import com.cdq.recruitmenttask.dto.TaskDetailsResponse;
+import com.cdq.recruitmenttask.dto.TaskSummaryResponse;
 import com.cdq.recruitmenttask.error.ApiException;
 import com.cdq.recruitmenttask.error.ErrorCode;
 import com.cdq.recruitmenttask.model.Task;
@@ -10,12 +11,13 @@ import com.cdq.recruitmenttask.repository.TaskRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
@@ -36,16 +38,26 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Optional<TaskDetailsResponse> findDetailedTask(String taskId) {
-        return taskRepository.findById(taskId).map(task -> {
-            List<FieldChangeResult> results = deserializeResult(task.getResult());
-            return new TaskDetailsResponse(task.getId(), task.getStatus(), task.getProgress(), results);
-        });
+    public TaskDetailsResponse findDetailedTask(String taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException(
+                        ErrorCode.TASK_NOT_FOUND,
+                        "Task with ID " + taskId + " not found."
+                ));
+
+        List<FieldChangeResult> results = deserializeResult(task.getResult());
+        return new TaskDetailsResponse(task.getId(), task.getStatus(), task.getProgress(), results);
     }
 
     @Override
-    public List<Task> findAll() {
-        return taskRepository.findAll();
+    public List<TaskSummaryResponse> findAllTaskSummaries() {
+        return taskRepository.findAll().stream()
+                .map(task -> new TaskSummaryResponse(
+                        task.getId(),
+                        task.getStatus(),
+                        task.getProgress()
+                ))
+                .toList();
     }
 
     @Override
@@ -59,8 +71,10 @@ public class TaskServiceImpl implements TaskService {
         }
 
         try {
-            return objectMapper.readValue(json, new TypeReference<>() {});
+            return objectMapper.readValue(json, new TypeReference<>() {
+            });
         } catch (Exception e) {
+            log.error("Failed to deserialize task result: {}", e.getMessage());
             throw new ApiException(
                     ErrorCode.INTERNAL_SERVER_ERROR,
                     "Failed to deserialize task result: " + e.getMessage()
