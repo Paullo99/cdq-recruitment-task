@@ -52,8 +52,8 @@ public class PersonController {
     }
 
     @Operation(
-            summary = "Create or update a person",
-            description = "Creates or updates a person entity. Triggers asynchronous processing of field differences. Returns a task ID.",
+            summary = "Create a person",
+            description = "Creates a person entity. Triggers asynchronous processing of field differences. Returns a task ID.",
             responses = {
                     @ApiResponse(
                             responseCode = "201",
