@@ -89,6 +89,5 @@ Task results are cached in memory only when the task is **DONE**.
 ## Ideas for improvements
 - Replace raw JSON task result with a structured DB model.
 - Replace simple in-memory cache with **Redis**.
-- Use **Apache Kafka** for task processing.
-- Add **CI/CD** pipeline with GitHub Actions (build, test, Docker image)
+- Use **Apache Kafka** for task processing - the application could publish task events to a Kafka topic (e.g. 'person-tasks'). And a separate consumer service would then asynchronously process these events in the background.
 
