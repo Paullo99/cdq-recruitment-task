@@ -4,6 +4,7 @@ import com.cdq.recruitmenttask.dto.FieldChangeResult;
 import com.cdq.recruitmenttask.dto.TaskDetailsResponse;
 import com.cdq.recruitmenttask.dto.TaskSummaryResponse;
 import com.cdq.recruitmenttask.error.ApiException;
+import com.cdq.recruitmenttask.mapper.TaskMapper;
 import com.cdq.recruitmenttask.model.FieldChangeClassification;
 import com.cdq.recruitmenttask.model.Task;
 import com.cdq.recruitmenttask.model.TaskStatus;
@@ -41,6 +42,9 @@ class TaskServiceImplTest {
 
     @InjectMocks
     private TaskServiceImpl taskService;
+
+    @Mock
+    private TaskMapper taskMapper;
 
     @Test
     void testCreateTask_shouldCreateTaskWithDefaults() {
@@ -119,7 +123,9 @@ class TaskServiceImplTest {
     @Test
     void shouldReturnAllTasks() {
         List<Task> tasks = List.of(new Task(), new Task());
+
         when(taskRepository.findAll()).thenReturn(tasks);
+        when(taskMapper.toTaskSummaryResponse(any(Task.class))).thenReturn(new TaskSummaryResponse("1", TaskStatus.PENDING, 0));
 
         List<TaskSummaryResponse> result = taskService.findAllTaskSummaries();
         assertThat(result).hasSize(2);

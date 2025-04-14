@@ -2,8 +2,10 @@ package com.cdq.recruitmenttask.service;
 
 import com.cdq.recruitmenttask.async.TaskProcessor;
 import com.cdq.recruitmenttask.dto.PersonRequest;
+import com.cdq.recruitmenttask.dto.PersonResponse;
 import com.cdq.recruitmenttask.dto.TaskCreatedResponse;
 import com.cdq.recruitmenttask.error.ApiException;
+import com.cdq.recruitmenttask.mapper.PersonMapper;
 import com.cdq.recruitmenttask.model.Person;
 import com.cdq.recruitmenttask.model.Task;
 import com.cdq.recruitmenttask.repository.PersonRepository;
@@ -42,12 +44,16 @@ class PersonServiceImplTest {
     @InjectMocks
     private PersonServiceImpl personService;
 
+    @Mock
+    private PersonMapper personMapper;
+
     @Test
     void testCreateAndProcess_shouldCreatePersonAndTriggerTask() {
         Person saved = Person.builder().id(PERSON_ID).name("Anna").surname("Nowak").birthDate(LocalDate.of(1999, 1, 1)).company("CDQ").build();
         Task task = Task.builder().id(TASK_ID).personId(PERSON_ID).build();
 
-        when(personRepository.save(any())).thenReturn(saved);
+        when(personMapper.toPersonEntity(personRequest)).thenReturn(saved);
+        when(personRepository.save(saved)).thenReturn(saved);
         when(taskService.createTask(PERSON_ID)).thenReturn(task);
 
         TaskCreatedResponse response = personService.createAndProcess(personRequest);
@@ -61,9 +67,12 @@ class PersonServiceImplTest {
         Person existing = Person.builder().id(PERSON_ID).name("John").surname("Smith").birthDate(LocalDate.of(1990, 1, 1)).company("OldCo").build();
         Person updated = Person.builder().id(PERSON_ID).name("Anna").surname("Nowak").birthDate(LocalDate.of(1999, 1, 1)).company("CDQ").build();
         Task task = Task.builder().id(TASK_ID).personId(PERSON_ID).build();
+        PersonRequest oldRequest = new PersonRequest("John", "Smith", LocalDate.of(1990, 1, 1), "OldCo");
 
         when(personRepository.findById(PERSON_ID)).thenReturn(Optional.of(existing));
         when(personRepository.save(any())).thenReturn(updated);
+        when(personMapper.toPersonRequest(existing)).thenReturn(oldRequest);
+        when(personMapper.toPersonEntity(personRequest)).thenReturn(updated);
         when(taskService.createTask(PERSON_ID)).thenReturn(task);
 
         TaskCreatedResponse response = personService.updateAndProcess(PERSON_ID, personRequest);
@@ -86,7 +95,12 @@ class PersonServiceImplTest {
         Person person1 = Person.builder().id(1L).name("Anna").surname("Nowak").birthDate(LocalDate.of(1999, 1, 1)).company("CDQ").build();
         Person person2 = Person.builder().id(2L).name("John").surname("Smith").birthDate(LocalDate.of(1990, 1, 1)).company("OldCo").build();
 
+        PersonResponse response1 = new PersonResponse(1L, "Anna", "Nowak", LocalDate.of(1999, 1, 1), "CDQ");
+        PersonResponse response2 = new PersonResponse(2L, "John", "Smith", LocalDate.of(1990, 1, 1), "OldCo");
+
         when(personRepository.findAll()).thenReturn(List.of(person1, person2));
+        when(personMapper.toPersonResponse(person1)).thenReturn(response1);
+        when(personMapper.toPersonResponse(person2)).thenReturn(response2);
 
         var response = personService.findAll();
 

@@ -8,9 +8,11 @@ import com.cdq.recruitmenttask.model.Task;
 import com.cdq.recruitmenttask.model.TaskStatus;
 import com.cdq.recruitmenttask.service.TaskService;
 import com.cdq.recruitmenttask.util.FieldComparator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TaskProcessor {
@@ -49,6 +52,7 @@ public class TaskProcessor {
                 Runnable job = taskQueue.take();
                 job.run();
             } catch (Exception e) {
+                log.error("Error processing task: {}", e.getMessage());
                 throw new ApiException(
                         ErrorCode.TASK_EXECUTION_ERROR,
                         "Error processing task: " + e.getMessage()
@@ -59,47 +63,75 @@ public class TaskProcessor {
 
     private void executeTask(Task task, PersonRequest oldPerson, PersonRequest newPerson) {
         try {
-            task.setStatus(TaskStatus.IN_PROGRESS);
-            task.setProgress(0);
-            taskService.update(task);
+            startTask(task);
 
-            List<FieldChangeResult> results = new ArrayList<>();
+            List<FieldChangeResult> results = processFieldDifferences(task, oldPerson, newPerson);
 
-            for (int i = 0; i < FIELDS.size(); i++) {
-                String field = FIELDS.get(i);
-
-                String oldVal = extractField(oldPerson, field);
-                String newVal = extractField(newPerson, field);
-
-                FieldChangeResult result = FieldComparator.compare(field, oldVal, newVal);
-                results.add(result);
-
-                if (delayEnabled) {
-                    Thread.sleep(2000);
-                }
-
-                int progress = ((i + 1) * 100) / FIELDS.size();
-                task.setProgress(progress);
-                taskService.update(task);
-            }
-
-            String jsonResult = objectMapper.writeValueAsString(results);
-
-            task.setProgress(100);
-            task.setStatus(TaskStatus.DONE);
-            task.setResult(jsonResult);
-            taskService.update(task);
-
+            finalizeTask(task, results);
         } catch (Exception e) {
-            throw new ApiException(
-                    ErrorCode.TASK_EXECUTION_ERROR,
-                    "Error executing task: " + e.getMessage()
-            );
+            handleTaskFailure(task, e);
         }
     }
 
+    private void startTask(Task task) {
+        task.setStatus(TaskStatus.IN_PROGRESS);
+        task.setProgress(0);
+        taskService.update(task);
+    }
+
+    private List<FieldChangeResult> processFieldDifferences(Task task, PersonRequest oldPerson, PersonRequest newPerson) throws Exception {
+        List<FieldChangeResult> results = new ArrayList<>();
+
+        for (int i = 0; i < FIELDS.size(); i++) {
+            String field = FIELDS.get(i);
+
+            String oldVal = extractField(oldPerson, field);
+            String newVal = extractField(newPerson, field);
+
+            FieldChangeResult result = FieldComparator.compare(field, oldVal, newVal);
+            results.add(result);
+
+            if (delayEnabled) {
+                Thread.sleep(2000);
+            }
+
+            updateProgress(task, i + 1);
+        }
+
+        return results;
+    }
+
+    private void updateProgress(Task task, int completedFields) {
+        int progress = (completedFields * 100) / FIELDS.size();
+        task.setProgress(progress);
+        taskService.update(task);
+    }
+
+    private void finalizeTask(Task task, List<FieldChangeResult> results) throws JsonProcessingException {
+        task.setProgress(100);
+        task.setStatus(TaskStatus.DONE);
+        task.setResult(objectMapper.writeValueAsString(results));
+        taskService.update(task);
+    }
+
+    private void handleTaskFailure(Task task, Exception e) {
+        task.setStatus(TaskStatus.ERROR);
+        task.setProgress(0);
+        task.setResult(null);
+        taskService.update(task);
+
+        log.error("Error executing task: {}", e.getMessage(), e);
+        throw new ApiException(
+                ErrorCode.TASK_EXECUTION_ERROR,
+                "Error processing task: " + e.getMessage()
+        );
+    }
+
     private String extractField(PersonRequest person, String field) {
-        if (person == null) return null;
+        if (person == null) {
+            return null;
+
+        }
         return switch (field) {
             case "name" -> person.name();
             case "surname" -> person.surname();
