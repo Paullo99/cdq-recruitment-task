@@ -27,18 +27,13 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public TaskCreatedResponse createAndProcess(PersonRequest request) {
         Person person = personMapper.toPersonEntity(request);
-        Person saved = personRepository.save(person);
-
-        Task task = taskService.createTask(saved.getId());
-        taskProcessor.submit(task, null, request);
-
-        return new TaskCreatedResponse(task.getId());
+        return saveAndProcess(person, null, request);
     }
 
     @Override
     public TaskCreatedResponse updateAndProcess(Long id, PersonRequest request) {
         PersonRequest oldData = personRepository.findById(id)
-                .map(p -> new PersonRequest(p.getName(), p.getSurname(), p.getBirthDate(), p.getCompany()))
+                .map(personMapper::toPersonRequest)
                 .orElseThrow(() -> new ApiException(
                         ErrorCode.PERSON_NOT_FOUND,
                         "Person with ID " + id + " not found."
@@ -46,12 +41,7 @@ public class PersonServiceImpl implements PersonService {
 
         Person updated = personMapper.toPersonEntity(request);
         updated.setId(id);
-        Person saved = personRepository.save(updated);
-
-        Task task = taskService.createTask(saved.getId());
-        taskProcessor.submit(task, oldData, request);
-
-        return new TaskCreatedResponse(task.getId());
+        return saveAndProcess(updated, oldData, request);
     }
 
     @Override
@@ -60,5 +50,12 @@ public class PersonServiceImpl implements PersonService {
                 .stream()
                 .map(personMapper::toPersonResponse)
                 .toList();
+    }
+
+    private TaskCreatedResponse saveAndProcess(Person person, PersonRequest oldData, PersonRequest newData) {
+        Person saved = personRepository.save(person);
+        Task task = taskService.createTask(saved.getId());
+        taskProcessor.submit(task, oldData, newData);
+        return new TaskCreatedResponse(task.getId());
     }
 }

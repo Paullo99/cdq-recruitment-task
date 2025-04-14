@@ -11,5 +11,7 @@ public interface PersonMapper {
 
     Person toPersonEntity(PersonRequest request);
 
+    PersonRequest toPersonRequest(Person person);
+
     PersonResponse toPersonResponse(Person person);
 }
