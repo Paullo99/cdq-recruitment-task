@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -72,7 +73,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private List<FieldChangeResult> deserializeResult(String json) {
-        if(json == null || json.isEmpty()) {
+        if (StringUtils.isEmpty(json)) {
             return Collections.emptyList();
         }
 
