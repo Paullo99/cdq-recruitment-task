@@ -35,7 +35,7 @@ class FieldComparatorTest {
 
     @ParameterizedTest(name = "[{index}] {0} -> {1} = {2}")
     @MethodSource("provideFieldComparisonExamples")
-    void testCompare_shouldClassifyCorrectly(String oldVal, String newVal, FieldChangeClassification expected) throws InterruptedException {
+    void testCompare_shouldClassifyCorrectly(String oldVal, String newVal, FieldChangeClassification expected) {
         var result = FieldComparator.compare("field", oldVal, newVal);
         assertEquals(expected, result.classification());
     }
