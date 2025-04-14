@@ -54,3 +54,9 @@ The API documentation is available at [http://localhost:8080/swagger-ui/index.ht
     mvn test jacoco:report
     ```
   The coverage report will be generated in `target/site/jacoco/index.html`.
+
+## Ideas for improvements
+- Replace simple in-memory cache with **Redis**.
+- Use **Apache Kafka** for task processing.
+- Add CI/CD pipeline with GitHub Actions (build, test, Docker image)
+
