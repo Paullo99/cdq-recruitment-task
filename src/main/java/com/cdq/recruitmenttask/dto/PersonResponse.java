@@ -20,4 +20,5 @@ public record PersonResponse(
 
         @Schema(description = "Company", example = "CDQ")
         String company
-) {}
+) {
+}

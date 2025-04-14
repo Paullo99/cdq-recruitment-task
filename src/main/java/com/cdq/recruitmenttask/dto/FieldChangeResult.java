@@ -17,4 +17,5 @@ public record FieldChangeResult(
 
         @Schema(description = "Classification of the change based on similarity", example = "MEDIUM", enumAsRef = true)
         FieldChangeClassification classification
-) {}
+) {
+}

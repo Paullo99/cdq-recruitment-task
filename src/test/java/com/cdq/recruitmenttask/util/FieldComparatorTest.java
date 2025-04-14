@@ -7,16 +7,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldComparatorTest {
-
-    @ParameterizedTest(name = "[{index}] {0} -> {1} = {2}")
-    @MethodSource("provideFieldComparisonExamples")
-     void testCompare_shouldClassifyCorrectly(String oldVal, String newVal, FieldChangeClassification expected) throws InterruptedException {
-        var result = FieldComparator.compare("field", oldVal, newVal);
-        assertEquals(expected, result.classification());
-    }
 
     static Stream<Arguments> provideFieldComparisonExamples() {
         return Stream.of(
@@ -38,5 +31,12 @@ class FieldComparatorTest {
                 Arguments.of("ABCDEFGHIJK", "ABCDEFGHIJ", FieldChangeClassification.HIGH),
                 Arguments.of("Text", "text", FieldChangeClassification.MEDIUM)
         );
+    }
+
+    @ParameterizedTest(name = "[{index}] {0} -> {1} = {2}")
+    @MethodSource("provideFieldComparisonExamples")
+    void testCompare_shouldClassifyCorrectly(String oldVal, String newVal, FieldChangeClassification expected) throws InterruptedException {
+        var result = FieldComparator.compare("field", oldVal, newVal);
+        assertEquals(expected, result.classification());
     }
 }

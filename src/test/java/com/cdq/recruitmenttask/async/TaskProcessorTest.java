@@ -25,6 +25,10 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TaskProcessorTest {
+    private final String TASK_ID = "123";
+    private final long PERSON_ID = 1L;
+    private final Task task = Task.builder().id(TASK_ID).personId(PERSON_ID).build();
+    private final PersonRequest request = new PersonRequest("Anna", "Nowak", java.time.LocalDate.of(1999, 1, 1), "CDQ");
 
     @Mock
     private TaskService taskService;
@@ -34,12 +38,6 @@ class TaskProcessorTest {
 
     @InjectMocks
     private TaskProcessor taskProcessor;
-
-    private final String TASK_ID = "123";
-    private final long PERSON_ID = 1L;
-
-    private final Task task = Task.builder().id(TASK_ID).personId(PERSON_ID).build();
-    private final PersonRequest request = new PersonRequest("Anna", "Nowak", java.time.LocalDate.of(1999, 1, 1), "CDQ");
 
     @BeforeEach
     void setUp() {

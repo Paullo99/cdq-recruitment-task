@@ -30,6 +30,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class TaskServiceImplTest {
 
+    private static final String TASK_ID = "123";
+    private static final long PERSON_ID = 1L;
+
     @Mock
     private TaskRepository taskRepository;
 
@@ -38,9 +41,6 @@ class TaskServiceImplTest {
 
     @InjectMocks
     private TaskServiceImpl taskService;
-
-    private static final String TASK_ID = "123";
-    private static final long PERSON_ID = 1L;
 
     @Test
     void testCreateTask_shouldCreateTaskWithDefaults() {

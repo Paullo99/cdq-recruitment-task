@@ -26,6 +26,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PersonServiceImplTest {
 
+    private final PersonRequest personRequest = new PersonRequest("Anna", "Nowak", LocalDate.of(1999, 1, 1), "CDQ");
+    private final String TASK_ID = "123";
+    private final Long PERSON_ID = 1L;
+
     @Mock
     private PersonRepository personRepository;
 
@@ -37,10 +41,6 @@ class PersonServiceImplTest {
 
     @InjectMocks
     private PersonServiceImpl personService;
-
-    private final PersonRequest personRequest = new PersonRequest("Anna", "Nowak", LocalDate.of(1999, 1, 1), "CDQ");
-    private final String TASK_ID = "123";
-    private final Long PERSON_ID = 1L;
 
     @Test
     void testCreateAndProcess_shouldCreatePersonAndTriggerTask() {

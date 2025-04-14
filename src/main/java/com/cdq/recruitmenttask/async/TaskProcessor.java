@@ -28,12 +28,11 @@ public class TaskProcessor {
 
     private final TaskService taskService;
     private final ObjectMapper objectMapper;
+    private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Value("${task.delay.enabled:false}")
     private boolean delayEnabled;
-
-    private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @PostConstruct
     public void init() {

@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface PersonService {
     TaskCreatedResponse createAndProcess(PersonRequest request);
+
     TaskCreatedResponse updateAndProcess(Long id, PersonRequest request);
+
     List<PersonResponse> findAll();
 }

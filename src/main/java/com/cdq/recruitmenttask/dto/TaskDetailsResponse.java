@@ -22,4 +22,5 @@ public record TaskDetailsResponse(
                 schema = @Schema(implementation = FieldChangeResult.class)
         )
         List<FieldChangeResult> result
-) {}
+) {
+}

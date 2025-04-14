@@ -17,4 +17,5 @@ public record PersonRequest(
 
         @Schema(description = "Company", example = "CDQ")
         String company
-) {}
+) {
+}

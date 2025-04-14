@@ -13,4 +13,5 @@ public record TaskSummaryResponse(
 
         @Schema(description = "Progress in percent", example = "50")
         Integer progress
-) {}
+) {
+}
