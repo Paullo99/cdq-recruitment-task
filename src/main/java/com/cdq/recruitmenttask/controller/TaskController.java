@@ -69,7 +69,7 @@ public class TaskController {
     )
     @GetMapping("/{id}")
     public ResponseEntity<TaskDetailsResponse> getTaskById(@PathVariable String id) {
-        TaskDetailsResponse response = taskService.findDetailedTask(id);
+        TaskDetailsResponse response = taskService.findDetailedTaskWithCache(id);
         return ResponseEntity.ok(response);
     }
 }

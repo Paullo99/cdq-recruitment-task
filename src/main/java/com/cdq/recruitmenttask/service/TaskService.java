@@ -10,7 +10,7 @@ public interface TaskService {
 
     Task createTask(Long personId);
 
-    TaskDetailsResponse findDetailedTask(String taskId);
+    TaskDetailsResponse findDetailedTaskWithCache(String taskId);
 
     List<TaskSummaryResponse> findAllTaskSummaries();
 

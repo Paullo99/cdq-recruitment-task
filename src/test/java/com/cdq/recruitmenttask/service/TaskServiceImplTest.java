@@ -63,7 +63,7 @@ class TaskServiceImplTest {
     }
 
     @Test
-    void testFindDetailedTask_shouldReturnTaskDetails_whenFound() throws Exception {
+    void testFindDetailedTaskWithCache_shouldReturnTaskDetails_whenFound() throws Exception {
         Task task = Task.builder()
                 .id(TASK_ID)
                 .status(TaskStatus.DONE)
@@ -76,7 +76,7 @@ class TaskServiceImplTest {
         when(taskRepository.findById(TASK_ID)).thenReturn(Optional.of(task));
         when(objectMapper.readValue(eq("[{}]"), ArgumentMatchers.<TypeReference<List<FieldChangeResult>>>any())).thenReturn(results);
 
-        TaskDetailsResponse response = taskService.findDetailedTask(TASK_ID);
+        TaskDetailsResponse response = taskService.findDetailedTaskWithCache(TASK_ID);
 
         assertThat(response.taskId()).isEqualTo(TASK_ID);
         assertThat(response.status()).isEqualTo(TaskStatus.DONE);
@@ -85,33 +85,33 @@ class TaskServiceImplTest {
     }
 
     @Test
-    void testFindDetailedTask_shouldThrow_whenTaskNotFound() {
+    void testFindDetailedTaskWithCache_shouldThrow_whenTaskNotFound() {
         when(taskRepository.findById(TASK_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> taskService.findDetailedTask(TASK_ID))
+        assertThatThrownBy(() -> taskService.findDetailedTaskWithCache(TASK_ID))
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining("Task with ID 123 not found.");
     }
 
     @Test
-    void testFindDetailedTask_shouldReturnEmptyResultList_whenJsonIsNull() {
+    void testFindDetailedTaskWithCache_shouldReturnEmptyResultList_whenJsonIsNull() {
         Task task = Task.builder().id(TASK_ID).result(null).build();
         when(taskRepository.findById(TASK_ID)).thenReturn(Optional.of(task));
 
-        TaskDetailsResponse response = taskService.findDetailedTask(TASK_ID);
+        TaskDetailsResponse response = taskService.findDetailedTaskWithCache(TASK_ID);
 
         assertThat(response.result()).isEmpty();
     }
 
     @Test
-    void testFindDetailedTask_shouldThrowApiExceptionOnDeserializationError() throws Exception {
+    void testFindDetailedTaskWithCache_shouldThrowApiExceptionOnDeserializationError() throws Exception {
         Task task = Task.builder().id(TASK_ID).result("broken").build();
 
         when(taskRepository.findById(TASK_ID)).thenReturn(Optional.of(task));
         when(objectMapper.readValue(anyString(), ArgumentMatchers.<TypeReference<List<FieldChangeResult>>>any()))
                 .thenThrow(new RuntimeException("deserialization error"));
 
-        assertThatThrownBy(() -> taskService.findDetailedTask(TASK_ID))
+        assertThatThrownBy(() -> taskService.findDetailedTaskWithCache(TASK_ID))
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining("Failed to deserialize");
     }
