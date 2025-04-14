@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -43,12 +42,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    @Cacheable(value = "tasks", key = "#taskId")
+    @Cacheable(value = "tasks", key = "#taskId", unless = "#result.status().name() != 'DONE'")
     public TaskDetailsResponse findDetailedTaskWithCache(String taskId) {
         return findDetailedTask(taskId);
     }
 
-    @CachePut(value = "tasks", key = "#result.taskId", condition = "#result.status.name() == 'DONE'")
     public TaskDetailsResponse findDetailedTask(String taskId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException(
