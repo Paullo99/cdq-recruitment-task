@@ -27,10 +27,12 @@ class FieldComparatorTest {
                 Arguments.of("ABCDEFGH", "TDD", FieldChangeClassification.LOW),
 
                 Arguments.of(null, "new", FieldChangeClassification.ADDED),
+                Arguments.of("", "new", FieldChangeClassification.ADDED),
                 Arguments.of("old", null, FieldChangeClassification.DELETED),
                 Arguments.of("old", "", FieldChangeClassification.DELETED),
-                Arguments.of("", "new", FieldChangeClassification.ADDED),
                 Arguments.of("", "", FieldChangeClassification.HIGH),
+                Arguments.of(null, "", FieldChangeClassification.HIGH),
+                Arguments.of("", null, FieldChangeClassification.HIGH),
                 Arguments.of(null, null, FieldChangeClassification.HIGH),
                 Arguments.of("same", "same", FieldChangeClassification.HIGH),
                 Arguments.of("ABCDEFGHIJK", "ABCDEFGHIJ", FieldChangeClassification.HIGH),
