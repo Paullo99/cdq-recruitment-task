@@ -6,6 +6,7 @@ import com.cdq.recruitmenttask.dto.PersonResponse;
 import com.cdq.recruitmenttask.dto.TaskCreatedResponse;
 import com.cdq.recruitmenttask.error.ApiException;
 import com.cdq.recruitmenttask.error.ErrorCode;
+import com.cdq.recruitmenttask.mapper.PersonMapper;
 import com.cdq.recruitmenttask.model.Person;
 import com.cdq.recruitmenttask.model.Task;
 import com.cdq.recruitmenttask.repository.PersonRepository;
@@ -21,10 +22,11 @@ public class PersonServiceImpl implements PersonService {
     private final PersonRepository personRepository;
     private final TaskService taskService;
     private final TaskProcessor taskProcessor;
+    private final PersonMapper personMapper;
 
     @Override
     public TaskCreatedResponse createAndProcess(PersonRequest request) {
-        Person person = mapToEntity(request);
+        Person person = personMapper.toPersonEntity(request);
         Person saved = personRepository.save(person);
 
         Task task = taskService.createTask(saved.getId());
@@ -42,7 +44,7 @@ public class PersonServiceImpl implements PersonService {
                         "Person with ID " + id + " not found."
                 ));
 
-        Person updated = mapToEntity(request);
+        Person updated = personMapper.toPersonEntity(request);
         updated.setId(id);
         Person saved = personRepository.save(updated);
 
@@ -56,16 +58,7 @@ public class PersonServiceImpl implements PersonService {
     public List<PersonResponse> findAll() {
         return personRepository.findAll()
                 .stream()
-                .map(p -> new PersonResponse(p.getId(), p.getName(), p.getSurname(), p.getBirthDate(), p.getCompany()))
+                .map(personMapper::toPersonResponse)
                 .toList();
-    }
-
-    private Person mapToEntity(PersonRequest req) {
-        return Person.builder()
-                .name(req.name())
-                .surname(req.surname())
-                .birthDate(req.birthDate())
-                .company(req.company())
-                .build();
     }
 }

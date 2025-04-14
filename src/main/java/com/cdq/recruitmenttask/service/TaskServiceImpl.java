@@ -5,6 +5,7 @@ import com.cdq.recruitmenttask.dto.TaskDetailsResponse;
 import com.cdq.recruitmenttask.dto.TaskSummaryResponse;
 import com.cdq.recruitmenttask.error.ApiException;
 import com.cdq.recruitmenttask.error.ErrorCode;
+import com.cdq.recruitmenttask.mapper.TaskMapper;
 import com.cdq.recruitmenttask.model.Task;
 import com.cdq.recruitmenttask.model.TaskStatus;
 import com.cdq.recruitmenttask.repository.TaskRepository;
@@ -26,6 +27,7 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
     private final ObjectMapper objectMapper;
+    private final TaskMapper taskMapper;
 
     @Override
     public Task createTask(Long personId) {
@@ -60,11 +62,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<TaskSummaryResponse> findAllTaskSummaries() {
         return taskRepository.findAll().stream()
-                .map(task -> new TaskSummaryResponse(
-                        task.getId(),
-                        task.getStatus(),
-                        task.getProgress()
-                ))
+                .map(taskMapper::toTaskSummaryResponse)
                 .toList();
     }
 
